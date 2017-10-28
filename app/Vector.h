@@ -1,3 +1,5 @@
+#pragma once
+
 struct Vector {
     short x;
     short y;

@@ -5,8 +5,10 @@
 #include <RTClib.h>
 #include <SimpleTimer.h>
 
-#include "vector.h"
-#include "rgb.h"
+#include "Vector.h"
+#include "RGB.h"
+#include "TextOptions.h"
+#include "TextSection.h"
 
 // RTC
 RTC_DS1307 rtc;
@@ -39,16 +41,17 @@ String (*testString)(char end);
 TFT tft = TFT(cs, dc, rst);
 
 // char array to print to the screen
-char date[15];
+char DATE[15];
 char HH[3];
 char MM[3];
-char secs[3];
+// char PREV_SECS[3];
+char SECS[3];
 const char SEPARATOR[2] = ":";
 
 // text sizes
-const int DATE_SIZE = 1;
-const int HOUR_SIZE = 4;
-const int SECOND_SIZE = 2;
+const short DATE_SIZE = 1;
+const short HOUR_SIZE = 4;
+const short SECOND_SIZE = 2;
 
 const Vector RESOLUTION = {tft.width(), tft.height()};
 
@@ -62,6 +65,16 @@ const Vector MINUTES_POS = {HOUR_POS.x + 3 * HOUR_SIZE * 6, HOUR_Y};
 const Vector SECONDS_POS = {HOUR_POS.x + 5 * HOUR_SIZE * 6 + 5, HOUR_Y + 15};
 
 SimpleTimer timer;
+const auto DATE_OPTS = TextOptions{DATE_POS, DATE_SIZE, 15};
+const auto HOUR_OPTS = TextOptions{HOUR_POS, HOUR_SIZE, 3};
+const auto MIN_OPTS = TextOptions{MINUTES_POS, HOUR_SIZE, 3};
+const auto SEC_OPTS = TextOptions{SECONDS_POS, SECOND_SIZE, 3};
+// auto hour = TextSection(&tft, HOUR_OPTS);
+auto date = TextSection(tft, DATE_OPTS, DATE);
+auto hour = TextSection(tft, HOUR_OPTS, HH);
+auto minutes = TextSection(tft, MIN_OPTS, MM);
+auto seconds = TextSection(tft, SEC_OPTS, SECS);
+// auto seconds = TextSection(tft, SEC_OPTS, PREV_SECS);
 
 void setup()
 {
@@ -143,22 +156,22 @@ void updateTime()
 {
     static int prevDate, prevHour, prevMin;
     auto now = rtc.now();
-    auto date = now.day();
+    auto DATE = now.day();
     auto hour = now.hour();
     auto minutes = now.minute();
     auto seconds = now.second();
 
-    if (date != prevDate) writeDate(&now);
+    if (DATE != prevDate) writeDate(&now);
     if (hour != prevHour) writeHH(&now);
     if (minutes != prevMin) writeMM(&now);
     writeSS(&now);
 
-    prevDate = date;
+    prevDate = DATE;
     prevHour = hour;
     prevMin = minutes;
 }
 
-String getDate(DateTime *now)
+String getDate(const DateTime *now)
 {
     auto dotw = daysOfTheWeek[now->dayOfTheWeek()];
     auto year = String(now->year());
@@ -168,39 +181,52 @@ String getDate(DateTime *now)
     return String(year + "/" + month + "/" + day + " " + dotw);
 }
 
-void writeDate(DateTime *now)
+void writeText(const DateTime *now, char *prevText, const char *newText, const TextOptions *DATE_OPTS) {
+    write(prevText, newText, DATE_OPTS);
+    memcpy(prevText, newText, DATE_OPTS->length);
+}
+
+void writeDate(const DateTime *now)
 {
     static char prevDate[15];
     auto dateString = getDate(now);
-    dateString.toCharArray(date, 15);
-    write(prevDate, date, DATE_POS, DATE_SIZE);
+    dateString.toCharArray(DATE, 15);
+    write(prevDate, DATE, &DATE_OPTS);
+    memcpy(prevDate, DATE, 15 * sizeof(char));
 }
 
-void writeHH(DateTime *now)
+void writeHH(const DateTime *now)
 {
     static char prevTime[3];
     auto hour = pad(now->hour());
     hour.toCharArray(HH, 3);
-    write(prevTime, HH, HOUR_POS, HOUR_SIZE);
+    write(prevTime, HH, &HOUR_OPTS);
     memcpy(prevTime, HH, 3 * sizeof(char));
 }
 
-void writeMM(DateTime *now)
+void writeMM(const DateTime *now)
 {
     static char prevTime[3];
     auto minutes = pad(now->minute());
     minutes.toCharArray(MM, 3);
-    write(prevTime, MM, MINUTES_POS, HOUR_SIZE);
+    write(prevTime, MM, &MIN_OPTS);
     memcpy(prevTime, MM, 3 * sizeof(char));
 }
 
-void writeSS(DateTime *now)
+void writeSS(const DateTime *now)
 {
-    static char prevSecs[3];
-    auto seconds = pad(now->second());
-    seconds.toCharArray(secs, 3);
-    write(prevSecs, secs, {125, 35}, SECOND_SIZE);
-    memcpy(prevSecs, secs, 3 * sizeof(char));
+
+    // auto text = pad(now->second());
+    // text.toCharArray(SECS, 3);
+    // seconds.write(SECS);
+
+    seconds.update(&pad(now->second()));
+
+    // static char prevSecs[3];
+    // auto seconds = pad(now->second());
+    // seconds.toCharArray(SECS, 3);
+    // write(prevSecs, SECS, &SEC_OPTS);
+    // memcpy(prevSecs, SECS, 3 * sizeof(char));
 }
 
 void writeSeparator()
@@ -210,14 +236,14 @@ void writeSeparator()
     tft.text(SEPARATOR, HOUR_POS.x + HOUR_SIZE * 6 * 2, HOUR_Y);
 }
 
-void write(char *prevText, char *newText, Vector position, int textSize)
+void write(const char *prevText, const char *newText, const TextOptions *DATE_OPTS)
 {
-    tft.setTextSize(textSize);
-    draw(prevText, position, BLACK);
-    draw(newText, position, WHITE);
+    tft.setTextSize(DATE_OPTS->size);
+    draw(prevText, DATE_OPTS->pos, BLACK);
+    draw(newText, DATE_OPTS->pos, WHITE);
 }
 
-void draw(char *text, Vector position, RGB color)
+void draw(const char *text, const Vector position, RGB color)
 {
     tft.stroke(color.r, color.g, color.b);
     tft.text(text, position.x, position.y);

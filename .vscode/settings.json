@@ -1,0 +1,21 @@
+{
+  "files.associations": {
+    "*.js": "javascriptreact",
+    "*.asset": "yaml",
+    "*.meta": "yaml",
+    ".gitignore": "shellscript",
+    "*.unity": "yaml",
+    ".collabignore": "shellscript",
+    "prompt_*_setup": "shellscript",
+    "*rc": "shellscript",
+    "*profile": "shellscript",
+    ".gitconfig": "gitconfig",
+    "*.pde": "cpp",
+    "iosfwd": "cpp",
+    "iterator": "cpp",
+    "vector": "cpp",
+    "ostream": "cpp",
+    "rope": "cpp",
+    "*.tcc": "cpp"
+  }
+}
