@@ -3,7 +3,14 @@
 #include "Vector.h"
 
 struct TextOptions {
-    const Vector pos;
-    const short size;
-    const short length;
+    Vector pos;
+    short size;
+    short length;
+
+    TextOptions& operator=(const TextOptions &other) {
+        pos = other.pos;
+        size = other.size;
+        length = other.length;
+        return *this;
+    }
 };
