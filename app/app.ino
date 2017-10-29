@@ -64,31 +64,22 @@ const Vector HOUR_POS = {0, HOUR_Y};
 const Vector MINUTES_POS = {HOUR_POS.x + 3 * HOUR_SIZE * 6, HOUR_Y};
 const Vector SECONDS_POS = {HOUR_POS.x + 5 * HOUR_SIZE * 6 + 5, HOUR_Y + 15};
 
-SimpleTimer timer;
 const auto DATE_OPTS = TextOptions{DATE_POS, DATE_SIZE, 15};
 const auto HOUR_OPTS = TextOptions{HOUR_POS, HOUR_SIZE, 3};
 const auto MIN_OPTS = TextOptions{MINUTES_POS, HOUR_SIZE, 3};
 const auto SEC_OPTS = TextOptions{SECONDS_POS, SECOND_SIZE, 3};
-// auto hour = TextSection(&tft, HOUR_OPTS);
 auto date = TextSection(tft, DATE_OPTS, DATE);
 auto hour = TextSection(tft, HOUR_OPTS, HH);
 auto minutes = TextSection(tft, MIN_OPTS, MM);
 auto seconds = TextSection(tft, SEC_OPTS, SECS);
-// auto seconds = TextSection(tft, SEC_OPTS, PREV_SECS);
+
+SimpleTimer timer;
 
 void setup()
 {
     // init RTC
-    if (!rtc.begin())
-    {
-        while (1)
-            ;
-    }
-
-    if (!rtc.isrunning())
-    {
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    }
+    if (!rtc.begin()) { while (1) ; }
+    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
 
     tft.begin();
     tft.background(0, 0, 0);
@@ -113,10 +104,6 @@ String my_append(char c)
 void loop()
 {
     timer.run();
-    // DateTime now = rtc.now();
-    // writeHHMM(&now);
-    // writeSS(&now);
-    // writeDate(&now);
 
     // char key = keypad.getKey();
 
@@ -132,43 +119,24 @@ void loop()
     //     //   test(3, 5).toCharArray()
     //     //   test
     // }
-    // set the font color
-    // write(HHMM, HHMM, {})
-    // tft.stroke(255, 255, 255);
-    // // print the sensor value
-    // // tft.text(HHMM, 0, 20);
-    // tft.setTextSize(SECOND_SIZE);
-    // tft.text(secs, 125, 35);
-    // // tft.setTextSize(HOUR_SIZE);
-
-    // // wait for a moment
-    // delay(250);
-    // // erase the text you just wrote
-    // tft.stroke(0, 0, 0);
-    // // tft.text(HHMM, 0, 20);
-
-    // tft.setTextSize(SECOND_SIZE);
-    // tft.text(secs, 125, 35);
-    // // tft.setTextSize(HOUR_SIZE);
 }
 
 void updateTime()
 {
     static int prevDate, prevHour, prevMin;
     auto now = rtc.now();
-    auto DATE = now.day();
-    auto hour = now.hour();
-    auto minutes = now.minute();
-    auto seconds = now.second();
+    auto currentDate = now.day();
+    auto currentHour = now.hour();
+    auto currentMinute = now.minute();
 
-    if (DATE != prevDate) writeDate(&now);
-    if (hour != prevHour) writeHH(&now);
-    if (minutes != prevMin) writeMM(&now);
-    writeSS(&now);
+    if (currentDate != prevDate) date.update(&getDate(&now));
+    if (currentHour != prevHour) hour.update(&pad(currentHour));
+    if (currentMinute != prevMin) minutes.update(&pad(currentMinute));
+    seconds.update(&pad(now.second()));
 
-    prevDate = DATE;
-    prevHour = hour;
-    prevMin = minutes;
+    prevDate = currentDate;
+    prevHour = currentHour;
+    prevMin = currentMinute;
 }
 
 String getDate(const DateTime *now)
