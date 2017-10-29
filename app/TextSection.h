@@ -2,7 +2,6 @@
 
 #include "Arduino.h"
 #include <TFT.h>
-#include <RTClib.h>
 #include "TextOptions.h"
 #include "RGB.h"
 

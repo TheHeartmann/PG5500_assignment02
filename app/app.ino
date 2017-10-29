@@ -9,6 +9,7 @@
 #include "RGB.h"
 #include "TextOptions.h"
 #include "TextSection.h"
+#include "TimeKeeper.h"
 
 // RTC
 RTC_DS1307 rtc;
@@ -39,41 +40,8 @@ String (*testString)(char end);
 
 // create an instance of the library
 TFT tft = TFT(cs, dc, rst);
-
-// char array to print to the screen
-char DATE[15];
-char HH[3];
-char MM[3];
-// char PREV_SECS[3];
-char SECS[3];
-const char SEPARATOR[2] = ":";
-
-// text sizes
-const short DATE_SIZE = 1;
-const short HOUR_SIZE = 4;
-const short SECOND_SIZE = 2;
-
-const Vector RESOLUTION = {tft.width(), tft.height()};
-
-// text width appears to be 60% of the height
-
-// text coordinates
-const Vector DATE_POS = {0, RESOLUTION.y - DATE_SIZE * 10};
-const short HOUR_Y = 20;
-const Vector HOUR_POS = {0, HOUR_Y};
-const Vector MINUTES_POS = {HOUR_POS.x + 3 * HOUR_SIZE * 6, HOUR_Y};
-const Vector SECONDS_POS = {HOUR_POS.x + 5 * HOUR_SIZE * 6 + 5, HOUR_Y + 15};
-
-const auto DATE_OPTS = TextOptions{DATE_POS, DATE_SIZE, 15};
-const auto HOUR_OPTS = TextOptions{HOUR_POS, HOUR_SIZE, 3};
-const auto MIN_OPTS = TextOptions{MINUTES_POS, HOUR_SIZE, 3};
-const auto SEC_OPTS = TextOptions{SECONDS_POS, SECOND_SIZE, 3};
-auto date = TextSection(tft, DATE_OPTS, DATE);
-auto hour = TextSection(tft, HOUR_OPTS, HH);
-auto minutes = TextSection(tft, MIN_OPTS, MM);
-auto seconds = TextSection(tft, SEC_OPTS, SECS);
-
 SimpleTimer timer;
+auto tk = TimeKeeper(tft, rtc);
 
 void setup()
 {
@@ -83,12 +51,16 @@ void setup()
 
     tft.begin();
     tft.background(0, 0, 0);
-    writeSeparator();
+    tk.writeSeparator();
+    updateTk();
 
-    updateTime();
-    timer.setInterval(1000, updateTime);
+    timer.setInterval(1000, updateTk);
     // test = &multiply;
     // testString = &my_append;
+}
+
+void updateTk() {
+    tk.updateTime();
 }
 
 int multiply(int a, int b)
@@ -119,45 +91,4 @@ void loop()
     //     //   test(3, 5).toCharArray()
     //     //   test
     // }
-}
-
-void updateTime()
-{
-    static int prevDate, prevHour, prevMin;
-    auto now = rtc.now();
-    auto currentDate = now.day();
-    auto currentHour = now.hour();
-    auto currentMinute = now.minute();
-
-    if (currentDate != prevDate) date.update(&getDate(&now));
-    if (currentHour != prevHour) hour.update(&pad(currentHour));
-    if (currentMinute != prevMin) minutes.update(&pad(currentMinute));
-    seconds.update(&pad(now.second()));
-
-    prevDate = currentDate;
-    prevHour = currentHour;
-    prevMin = currentMinute;
-}
-
-String getDate(const DateTime *now)
-{
-    auto dotw = daysOfTheWeek[now->dayOfTheWeek()];
-    auto year = String(now->year());
-    auto month = pad(now->month());
-    auto day = pad(now->day());
-
-    return String(year + "/" + month + "/" + day + " " + dotw);
-}
-
-void writeSeparator()
-{
-    tft.stroke(255, 255, 255);
-    tft.setTextSize(HOUR_SIZE);
-    tft.text(SEPARATOR, HOUR_POS.x + HOUR_SIZE * 6 * 2, HOUR_Y);
-}
-
-String pad(int number)
-{
-    auto numberString = String(number);
-    return numberString.length() < 2 ? "0" + numberString : numberString;
 }

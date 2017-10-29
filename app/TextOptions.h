@@ -4,6 +4,6 @@
 
 struct TextOptions {
     const Vector pos;
-    const uint8_t size;
+    const short size;
     const short length;
 };
