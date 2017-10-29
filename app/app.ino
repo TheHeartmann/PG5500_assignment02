@@ -149,72 +149,11 @@ String getDate(const DateTime *now)
     return String(year + "/" + month + "/" + day + " " + dotw);
 }
 
-void writeText(const DateTime *now, char *prevText, const char *newText, const TextOptions *DATE_OPTS) {
-    write(prevText, newText, DATE_OPTS);
-    memcpy(prevText, newText, DATE_OPTS->length);
-}
-
-void writeDate(const DateTime *now)
-{
-    static char prevDate[15];
-    auto dateString = getDate(now);
-    dateString.toCharArray(DATE, 15);
-    write(prevDate, DATE, &DATE_OPTS);
-    memcpy(prevDate, DATE, 15 * sizeof(char));
-}
-
-void writeHH(const DateTime *now)
-{
-    static char prevTime[3];
-    auto hour = pad(now->hour());
-    hour.toCharArray(HH, 3);
-    write(prevTime, HH, &HOUR_OPTS);
-    memcpy(prevTime, HH, 3 * sizeof(char));
-}
-
-void writeMM(const DateTime *now)
-{
-    static char prevTime[3];
-    auto minutes = pad(now->minute());
-    minutes.toCharArray(MM, 3);
-    write(prevTime, MM, &MIN_OPTS);
-    memcpy(prevTime, MM, 3 * sizeof(char));
-}
-
-void writeSS(const DateTime *now)
-{
-
-    // auto text = pad(now->second());
-    // text.toCharArray(SECS, 3);
-    // seconds.write(SECS);
-
-    seconds.update(&pad(now->second()));
-
-    // static char prevSecs[3];
-    // auto seconds = pad(now->second());
-    // seconds.toCharArray(SECS, 3);
-    // write(prevSecs, SECS, &SEC_OPTS);
-    // memcpy(prevSecs, SECS, 3 * sizeof(char));
-}
-
 void writeSeparator()
 {
     tft.stroke(255, 255, 255);
     tft.setTextSize(HOUR_SIZE);
     tft.text(SEPARATOR, HOUR_POS.x + HOUR_SIZE * 6 * 2, HOUR_Y);
-}
-
-void write(const char *prevText, const char *newText, const TextOptions *DATE_OPTS)
-{
-    tft.setTextSize(DATE_OPTS->size);
-    draw(prevText, DATE_OPTS->pos, BLACK);
-    draw(newText, DATE_OPTS->pos, WHITE);
-}
-
-void draw(const char *text, const Vector position, RGB color)
-{
-    tft.stroke(color.r, color.g, color.b);
-    tft.text(text, position.x, position.y);
 }
 
 String pad(int number)
