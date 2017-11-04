@@ -24,9 +24,12 @@ class AlarmDisplay : public TimeDisplay
     void display(const String &hours, const String &minutes, const TimeDivision target) const;
     void turnOff() const;
     void toggle();
+    void toggle(bool updateDisplay);
     void edit(const TimeDivision target) const;
     void cancel() const;
     void save(const String hours, const String minutes);
+    const String& getMins() const;
+    const String& getHours() const;
 
   private:
     void set() const;
@@ -44,5 +47,3 @@ class AlarmDisplay : public TimeDisplay
     const RGB EDITING_INACTIVE = GRAY;
     RGB currentColor;
 };
-
-void ring();

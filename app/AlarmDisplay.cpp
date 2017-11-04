@@ -10,8 +10,8 @@ void AlarmDisplay::display(const String &newHour, const String &newMinutes) cons
     const auto hourPadded = pad(newHour.toInt());
     const auto minutesPadded = pad(newMinutes.toInt());
 
-    minutes.update(hourPadded, &currentColor);
-    hour.update(minutesPadded, &currentColor);
+    hour.update(hourPadded, &currentColor);
+    minutes.update(minutesPadded, &currentColor);
 }
 
 void AlarmDisplay::display(const String &newHour, const String &newMinutes, const TimeDivision target) const
@@ -22,11 +22,16 @@ void AlarmDisplay::display(const String &newHour, const String &newMinutes, cons
     redrawForEdit(hourPadded, minutesPadded, target);
 }
 
-void AlarmDisplay::toggle()
+void AlarmDisplay::toggle(bool updateDisplay)
 {
     active = !active;
     currentColor = active ? ACTIVE_COLOR : INACTIVE_COLOR;
     redraw();
+}
+
+void AlarmDisplay::toggle()
+{
+    toggle(true);
 }
 
 void AlarmDisplay::edit(const TimeDivision target) const
@@ -69,7 +74,7 @@ void AlarmDisplay::redraw(const RGB *color) const
 
 void AlarmDisplay::set() const
 {
-    // Alarm.alarmRepeat((int)hourString.toInt(), (int)minuteString.toInt(), 0, ring);
+    Alarm.alarmRepeat((int)hourString.toInt(), (int)minuteString.toInt(), 0, ring);
 }
 
 void AlarmDisplay::turnOff() const {}
@@ -85,4 +90,17 @@ void AlarmDisplay::init() const
     hour.update(unset, &currentColor);
 }
 
-void AlarmDisplay::ring() {}
+void AlarmDisplay::ring()
+{
+
+}
+
+const String &AlarmDisplay::getHours() const
+{
+    return hourString;
+}
+
+const String &AlarmDisplay::getMins() const
+{
+    return minuteString;
+}

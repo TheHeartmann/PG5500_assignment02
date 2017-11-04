@@ -27,12 +27,17 @@ class AlarmInputHandler
     void switchTarget()
     {
         assignValue();
+        temp = currentTarget == TimeDivision::Hour ? minutes : hours;
         currentTarget = (TimeDivision)(1 - currentTarget);
         updateAlarm();
     }
 
     void registerNumeral(const char num)
     {
+        if (temp.length() >= 2)
+        {
+            temp = "";
+        }
         temp += String(num);
 
         if (temp.length() < 2)
@@ -57,7 +62,6 @@ class AlarmInputHandler
             if (temp.toInt() < 60)
                 minutes = temp;
         }
-        temp = "";
     }
 
     void updateAlarm() const
@@ -91,10 +95,7 @@ class AlarmInputHandler
         if (isAlpha(key))
         {
             const auto desiredAlarm = (*alarms)[key - 'A'];
-            if (!editingAlarm || !currentAlarm || currentAlarm != desiredAlarm)
-            {
-                desiredAlarm->toggle();
-            }
+            desiredAlarm->toggle(desiredAlarm != currentAlarm);
         }
         else if (key == set || key == turnOff)
         {
@@ -121,17 +122,11 @@ class AlarmInputHandler
                     currentAlarm->cancel();
                 }
                 editingAlarm == false;
+                currentAlarm = nullptr;
             }
             else if (isAlpha(key))
             {
-                reset();
-                if (currentAlarm)
-                {
-                    currentAlarm->cancel();
-                }
-                currentAlarm = (*alarms)[key - 'A'];
-                currentAlarm->edit(currentTarget);
-                editingAlarm = true;
+                changeAlarm(key);
             }
         }
         else if (leader == turnOff)
@@ -145,6 +140,21 @@ class AlarmInputHandler
                 switchTarget();
             }
         }
+    }
+
+    void changeAlarm(char key)
+    {
+        reset();
+        if (currentAlarm)
+        {
+            currentAlarm->cancel();
+        }
+        currentAlarm = (*alarms)[key - 'A'];
+        hours = currentAlarm->getHours();
+        minutes = currentAlarm->getMins();
+        temp = hours;
+        currentAlarm->edit(currentTarget);
+        editingAlarm = true;
     }
 
     String hours;

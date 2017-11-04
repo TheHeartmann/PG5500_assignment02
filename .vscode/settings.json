@@ -19,6 +19,8 @@
     "*.tcc": "cpp",
     "slist": "cpp",
     "array": "cpp",
-    "hashtable": "cpp"
+    "hashtable": "cpp",
+    "memory": "cpp",
+    "random": "cpp"
   }
 }
