@@ -15,7 +15,7 @@ TimeKeeper::TimeKeeper(TFT &tft, RTC_DS1307 &rtc)
     seconds = TextSection(tft, SEC_OPTS, SECS);
 }
 
-void TimeKeeper::update()
+void TimeKeeper::update() const
 {
     static int prevDate, prevHour, prevMin;
     auto now = rtc.now();
@@ -24,20 +24,20 @@ void TimeKeeper::update()
     auto currentMinute = now.minute();
 
     auto ss = pad(now.second());
-    seconds.update(&ss);
+    seconds.update(ss);
 
     if (currentMinute != prevMin)
     {
         auto ms = pad(currentMinute);
-        minutes.update(&ms);
+        minutes.update(ms);
         if (currentHour != prevHour)
         {
             auto hs = pad(currentHour);
-            hour.update(&hs);
+            hour.update(hs);
             if (currentDate != prevDate)
             {
                 auto ds = getDateString(now);
-                date.update(&ds);
+                date.update(ds);
             }
         }
     }

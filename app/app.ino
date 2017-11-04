@@ -3,7 +3,7 @@
 #include <SimpleTimer.h>
 #include <TFT.h> // Arduino LCD library
 
-#include "Alarm.h"
+#include "AlarmDisplay.h"
 #include "InputHandler.h"
 #include "Pins.h"
 #include "RGB.h"
@@ -19,30 +19,31 @@ RTC_DS1307 rtc;
 TFT tft = TFT(cs, dc, rst);
 SimpleTimer timer;
 auto tk = TimeKeeper(tft, rtc);
-auto alarm = Alarm(tft, rtc, 2, {0, 60});
-const Alarm alarms[] = {alarm};
-const auto input = InputHandler(alarms);
-// TimeKeeper tk;
+auto alarmA = AlarmDisplay(tft, rtc, 2, {0, 60});
+auto alarmB = AlarmDisplay(tft, rtc, 2, {90, 60});
+auto alarmC = AlarmDisplay(tft, rtc, 2, {0, 80});
+auto alarmD = AlarmDisplay(tft, rtc, 2, {90, 80});
+AlarmDisplay *alarms[] = {&alarmA, &alarmB, &alarmC, &alarmD};
+auto input = InputHandler(&alarms);
 
 void setup()
 {
-    // init RTC
     if (!rtc.begin()) { while (1) ; }
-    if (!rtc.isrunning())
-    {
-        rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-    }
 
     tft.begin();
     tft.background(0, 0, 0);
-    // tft.background(0, 0, 255);
-    updateTk();
-    timer.setInterval(1000, updateTk);
 
-    alarm.update();
+    tk.init();
+
+    for (auto &i : alarms) {
+        i->init();
+    }
+
+    tick();
+    timer.setInterval(1000, tick);
 }
 
-void updateTk()
+void tick()
 {
     tk.update();
 }

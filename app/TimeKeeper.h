@@ -12,7 +12,7 @@ class TimeKeeper : public TimeDisplay
 {
   public:
     TimeKeeper(TFT &tft, RTC_DS1307 &rtc);
-    void update() override;
+    void update() const override;
 
   private:
     String getDateString(const DateTime &now) const;
