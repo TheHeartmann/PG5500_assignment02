@@ -2,25 +2,7 @@
 
 void AlarmDisplay::update() const
 {
-    auto now = rtc.now();
-
-    static int prevHour, prevMin;
-    auto currentHour = now.hour();
-    auto currentMinute = now.minute();
-
-    if (currentMinute != prevMin)
-    {
-        auto ms = pad(currentMinute);
-        minutes.update(ms);
-        if (currentHour != prevHour)
-        {
-            auto hs = pad(currentHour);
-            hour.update(hs);
-        }
-    }
-
-    prevHour = currentHour;
-    prevMin = currentMinute;
+    display(hourString, minuteString);
 }
 
 void AlarmDisplay::display(const String &newHour, const String &newMinutes) const
@@ -28,30 +10,79 @@ void AlarmDisplay::display(const String &newHour, const String &newMinutes) cons
     const auto hourPadded = pad(newHour.toInt());
     const auto minutesPadded = pad(newMinutes.toInt());
 
-    hour.update(hourPadded);
-    minutes.update(minutesPadded);
+    minutes.update(hourPadded, &currentColor);
+    hour.update(minutesPadded, &currentColor);
+}
+
+void AlarmDisplay::display(const String &newHour, const String &newMinutes, const TimeDivision target) const
+{
+    const auto hourPadded = pad(newHour.toInt());
+    const auto minutesPadded = pad(newMinutes.toInt());
+
+    redrawForEdit(hourPadded, minutesPadded, target);
 }
 
 void AlarmDisplay::toggle()
 {
     active = !active;
-    const auto color = active ? ACTIVE_COLOR : INACTIVE_COLOR;
-    hour.redraw(&color);
-    minutes.redraw(&color);
+    currentColor = active ? ACTIVE_COLOR : INACTIVE_COLOR;
+    redraw();
 }
 
-void AlarmDisplay::set(DateTime *newTime)
+void AlarmDisplay::edit(const TimeDivision target) const
 {
-    alarmTime = *newTime;
-    Alarm.alarmRepeat((int)hourString.toInt(), (int)minuteString.toInt(), 0, ring);
-    // change color of alarm using the 1 - enum method
+    redrawForEdit(hourString, minuteString, target);
+}
+
+void AlarmDisplay::redrawForEdit(const String hourPadded, const String minutesPadded, const TimeDivision target) const
+{
+    const auto hourColor = target == TimeDivision::Hour ? EDITING_COLOR : EDITING_INACTIVE;
+    const auto minuteColor = target == TimeDivision::Minutes ? EDITING_COLOR : EDITING_INACTIVE;
+
+    hour.update(hourPadded, &hourColor);
+    minutes.update(minutesPadded, &minuteColor);
+}
+
+void AlarmDisplay::save(const String hours, const String minutes)
+{
+    hourString = pad(hours.toInt());
+    minuteString = pad(minutes.toInt());
+    set();
+    update();
+}
+
+void AlarmDisplay::cancel() const
+{
+    display(hourString, minuteString);
+}
+
+void AlarmDisplay::redraw() const
+{
+    redraw(&currentColor);
+}
+
+void AlarmDisplay::redraw(const RGB *color) const
+{
+    hour.redraw(color);
+    minutes.redraw(color);
+}
+
+void AlarmDisplay::set() const
+{
+    // Alarm.alarmRepeat((int)hourString.toInt(), (int)minuteString.toInt(), 0, ring);
 }
 
 void AlarmDisplay::turnOff() const {}
 
-void AlarmDisplay::init() const {
+void AlarmDisplay::init() const
+{
     TimeDisplay::init();
+    currentColor = INACTIVE_COLOR;
+    hourString = "00";
+    minuteString = "00";
     const auto unset = String("--");
-    minutes.update(unset, &INACTIVE_COLOR);
-    hour.update(unset, &INACTIVE_COLOR);
+    minutes.update(unset, &currentColor);
+    hour.update(unset, &currentColor);
 }
+
+void AlarmDisplay::ring() {}

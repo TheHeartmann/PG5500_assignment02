@@ -10,6 +10,7 @@
 #include "TextOptions.h"
 #include "TextSection.h"
 #include "TimeDisplay.h"
+#include "TimeDivision.h"
 
 class AlarmDisplay : public TimeDisplay
 {
@@ -17,22 +18,31 @@ class AlarmDisplay : public TimeDisplay
     AlarmDisplay(TFT &tft, RTC_DS1307 rtc, const short textSize, const Vector hourPos)
         : TimeDisplay(tft, rtc, textSize, hourPos) {}
     void update() const override;
-    void set(DateTime *newTime);
     void init() const override;
 
     void display(const String &hours, const String &minutes) const;
+    void display(const String &hours, const String &minutes, const TimeDivision target) const;
     void turnOff() const;
     void toggle();
+    void edit(const TimeDivision target) const;
+    void cancel() const;
+    void save(const String hours, const String minutes);
 
   private:
+    void set() const;
+    void redraw(const RGB *color) const;
+    void redraw() const;
+    void redrawForEdit(const String hourPadded, const String minutesPadded, const TimeDivision target) const;
     void setActive(bool activeState);
+    void ring();
 
     bool active;
     String hourString, minuteString;
     const RGB INACTIVE_COLOR = RED;
     const RGB ACTIVE_COLOR = GREEN;
     const RGB EDITING_COLOR = ORANGE;
-    DateTime alarmTime;
+    const RGB EDITING_INACTIVE = GRAY;
+    RGB currentColor;
 };
 
 void ring();

@@ -2,61 +2,51 @@
 
 #include <Arduino.h>
 #include <Keypad.h>
-#include <ctype.h>
 #include "AlarmDisplay.h"
-#include <RTClib.h>
-#include "AlarmInputHandler.h"
-
-enum TimeDivision
-{
-    Hour,
-    Minutes
-};
+#include "TimeDivision.h"
 
 class AlarmInputHandler
 {
   public:
-    // AlarmInputHandler(AlarmDisplay *(*alarms)[4]) : alarms(alarms) {}
-    void setAlarmsArray(AlarmDisplay *(*alarmArray)[4])
-    {
-        alarms = alarmArray;
-    }
+    AlarmInputHandler() { reset(); }
+    void setAlarmsArray(AlarmDisplay *(*alarmArray)[4]) { alarms = alarmArray; }
     void handleInput(char key)
     {
-        if (leader == noInput)
+        if (leader == blank)
         {
             handleNoLeader(key);
         }
         else
         {
-            if (isModifier(key))
-            {
-                handleModified(key);
-            }
-            else if (isDigit(key) && editingAlarm)
-            {
-                registerNumeral(key);
-            }
-            leader = noInput;
+            handleModified(key);
+            leader = blank;
         }
     }
 
-    void changeTarget(TimeDivision newTarget)
+  private:
+    void switchTarget()
     {
-        // currentTarget = (TimeDivision)(1 - currentTarget);
-        currentTarget = newTarget;
-        temp = "";
+        assignValue();
+        currentTarget = (TimeDivision)(1 - currentTarget);
+        updateAlarm();
     }
 
     void registerNumeral(const char num)
     {
         temp += String(num);
 
-        currentAlarm->display(hours, minutes);
-
-        if (temp.length() != 2)
+        if (temp.length() < 2)
+        {
+            updateAlarmTemp();
             return;
+        }
 
+        assignValue();
+        updateAlarm();
+    }
+
+    void assignValue()
+    {
         if (currentTarget == TimeDivision::Hour)
         {
             if (temp.toInt() < 24)
@@ -69,19 +59,50 @@ class AlarmInputHandler
         }
         temp = "";
     }
-    void reset();
 
-  private:
-    bool isModifier(char c) { return c == set || c == turnOff; }
+    void updateAlarm() const
+    {
+        currentAlarm->display(hours, minutes, currentTarget);
+    }
+
+    void updateAlarmTemp() const
+    {
+        if (currentTarget == TimeDivision::Hour)
+        {
+            currentAlarm->display(temp, minutes, currentTarget);
+        }
+        else
+        {
+            currentAlarm->display(hours, temp, currentTarget);
+        }
+    }
+
+    void reset()
+    {
+        currentTarget = TimeDivision::Hour;
+        hours = minutes = temp = "";
+        leader = blank;
+    }
+
+    bool isModifier(char c) const { return c == set || c == turnOff; }
+
     void handleNoLeader(char key)
     {
         if (isAlpha(key))
         {
-            (*alarms)[key - 'A']->toggle();
+            const auto desiredAlarm = (*alarms)[key - 'A'];
+            if (!editingAlarm || !currentAlarm || currentAlarm != desiredAlarm)
+            {
+                desiredAlarm->toggle();
+            }
         }
         else if (key == set || key == turnOff)
         {
             leader = key;
+        }
+        else if (isDigit(key) && editingAlarm)
+        {
+            registerNumeral(key);
         }
     }
 
@@ -91,19 +112,26 @@ class AlarmInputHandler
         {
             if (isModifier(key))
             {
-                editingAlarm == false;
                 if (key == set)
                 {
-                    // currentAlarm->save();
+                    currentAlarm->save(hours, minutes);
                 }
                 else if (key == turnOff)
                 {
-                    // currentAlarm->cancel();
+                    currentAlarm->cancel();
                 }
+                editingAlarm == false;
             }
             else if (isAlpha(key))
             {
+                reset();
+                if (currentAlarm)
+                {
+                    currentAlarm->cancel();
+                }
                 currentAlarm = (*alarms)[key - 'A'];
+                currentAlarm->edit(currentTarget);
+                editingAlarm = true;
             }
         }
         else if (leader == turnOff)
@@ -114,7 +142,7 @@ class AlarmInputHandler
             }
             else if (key == turnOff && editingAlarm)
             {
-                changeTarget((TimeDivision)(1 - currentTarget));
+                switchTarget();
             }
         }
     }
@@ -122,14 +150,14 @@ class AlarmInputHandler
     String hours;
     String minutes;
     String temp;
-    TimeDivision currentTarget;
+    TimeDivision currentTarget = TimeDivision::Hour;
 
     AlarmDisplay *(*alarms)[4];
     AlarmDisplay *currentAlarm;
     const char set = '#';
     const char turnOff = '*';
-    const char noInput = ' ';
+    const char blank = '_';
 
-    char leader = noInput;
+    char leader = blank;
     bool editingAlarm = false;
 };
