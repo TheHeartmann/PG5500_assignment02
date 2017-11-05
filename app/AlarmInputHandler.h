@@ -134,11 +134,17 @@ class AlarmInputHandler
             if (isAlpha(key))
             {
                 AlarmDisplay::turnOff();
-                // (*alarms)[key - 'A']->turnOff();
             }
-            else if (key == turnOff && currentAlarm)
+            else if (key == turnOff)
             {
-                switchTarget();
+                if (currentAlarm)
+                {
+                    switchTarget();
+                }
+                else
+                {
+                    AlarmDisplay::turnOff();
+                }
             }
         }
     }
