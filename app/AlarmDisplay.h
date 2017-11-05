@@ -37,7 +37,7 @@ class AlarmDisplay : public TimeDisplay
     void redraw() const;
     void redrawForEdit(const String hourPadded, const String minutesPadded, const TimeDivision target) const;
     void setActive(bool activeState);
-    void ring();
+    static void ring(){}
 
     bool active;
     String hourString, minuteString;

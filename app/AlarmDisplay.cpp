@@ -26,7 +26,10 @@ void AlarmDisplay::toggle(bool updateDisplay)
 {
     active = !active;
     currentColor = active ? ACTIVE_COLOR : INACTIVE_COLOR;
-    redraw();
+    if (updateDisplay)
+    {
+        redraw();
+    }
 }
 
 void AlarmDisplay::toggle()
@@ -88,11 +91,6 @@ void AlarmDisplay::init() const
     const auto unset = String("--");
     minutes.update(unset, &currentColor);
     hour.update(unset, &currentColor);
-}
-
-void AlarmDisplay::ring()
-{
-
 }
 
 const String &AlarmDisplay::getHours() const

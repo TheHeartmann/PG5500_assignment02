@@ -95,13 +95,13 @@ class AlarmInputHandler
         if (isAlpha(key))
         {
             const auto desiredAlarm = (*alarms)[key - 'A'];
-            desiredAlarm->toggle(desiredAlarm != currentAlarm);
+            desiredAlarm->toggle(!currentAlarm || desiredAlarm != currentAlarm);
         }
         else if (key == set || key == turnOff)
         {
             leader = key;
         }
-        else if (isDigit(key) && editingAlarm)
+        else if (isDigit(key) && currentAlarm)
         {
             registerNumeral(key);
         }
@@ -121,7 +121,6 @@ class AlarmInputHandler
                 {
                     currentAlarm->cancel();
                 }
-                editingAlarm == false;
                 currentAlarm = nullptr;
             }
             else if (isAlpha(key))
@@ -135,7 +134,7 @@ class AlarmInputHandler
             {
                 (*alarms)[key - 'A']->turnOff();
             }
-            else if (key == turnOff && editingAlarm)
+            else if (key == turnOff && currentAlarm)
             {
                 switchTarget();
             }
@@ -154,7 +153,6 @@ class AlarmInputHandler
         minutes = currentAlarm->getMins();
         temp = hours;
         currentAlarm->edit(currentTarget);
-        editingAlarm = true;
     }
 
     String hours;
@@ -169,5 +167,4 @@ class AlarmInputHandler
     const char blank = '_';
 
     char leader = blank;
-    bool editingAlarm = false;
 };
