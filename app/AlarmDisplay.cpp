@@ -76,7 +76,7 @@ void AlarmDisplay::redraw(const RGB *color) const
 
 void AlarmDisplay::turnOff()
 {
-        noTone(ALARM_PIN);
+    noTone(ALARM_PIN);
 }
 
 void AlarmDisplay::init() const
@@ -107,6 +107,10 @@ void AlarmDisplay::ring() const
 
 void AlarmDisplay::checkAlarm() const
 {
+    if (!active)
+    {
+        return;
+    }
     const auto now = rtc.now();
     if (now.hour() == hourString.toInt() && now.minute() == minuteString.toInt() && now.second() == 0)
     {
