@@ -1,94 +1,67 @@
-#include <TFT.h> // Arduino LCD library
 #include <SPI.h>
-#include <Keypad.h>
-#include <ctype.h>
-#include <RTClib.h>
 #include <SimpleTimer.h>
+#include <TFT.h> // Arduino LCD library
+#include <RTClib.h>
 
-#include "Vector.h"
+#include "AlarmDisplay.h"
+#include "InputHandler.h"
+#include "Pins.h"
 #include "RGB.h"
 #include "TextOptions.h"
 #include "TextSection.h"
 #include "TimeKeeper.h"
+#include "Vector.h"
 
 // RTC
 RTC_DS1307 rtc;
 
-char daysOfTheWeek[7][12] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-
-// Keypad
-const byte ROWS = 4; //four rows
-const byte COLS = 4; //four columns
-char keys[ROWS][COLS] = {
-    {'1', '2', '3', 'A'},
-    {'4', '5', '6', 'B'},
-    {'7', '8', '9', 'C'},
-    {'*', '0', '#', 'D'}};
-
-byte rowPins[ROWS] = {5, 4, 3, 2};     //connect to the row pinouts of the keypad
-byte colPins[COLS] = {A0, A1, A2, A3}; //connect to the column pinouts of the keypad
-
-Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
-
-String (*testString)(char end);
-
 // TFT
-// pin definition for the Uno
-#define cs 10
-#define dc 9
-#define rst 8
-
-// create an instance of the library
 TFT tft = TFT(cs, dc, rst);
 SimpleTimer timer;
 auto tk = TimeKeeper(tft, rtc);
+auto alarmA = AlarmDisplay(tft, rtc, 2, {0, 60});
+auto alarmB = AlarmDisplay(tft, rtc, 2, {90, 60});
+auto alarmC = AlarmDisplay(tft, rtc, 2, {0, 80});
+auto alarmD = AlarmDisplay(tft, rtc, 2, {90, 80});
+AlarmDisplay *alarms[] = {&alarmA, &alarmB, &alarmC, &alarmD};
+auto input = InputHandler(&alarms);
 
 void setup()
 {
-    // init RTC
-    if (!rtc.begin()) { while (1) ; }
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
+    if (!rtc.begin())
+    {
+        while (1)
+            ;
+    }
 
     tft.begin();
     tft.background(0, 0, 0);
-    tk.writeSeparator();
-    updateTk();
 
-    timer.setInterval(1000, updateTk);
-    // test = &multiply;
-    // testString = &my_append;
+    tk.init();
+
+    for (auto &i : alarms)
+    {
+        i->init();
+    }
+
+    tick();
+    timer.setInterval(1000, tick);
 }
 
-void updateTk() {
-    tk.updateTime();
-}
-
-int multiply(int a, int b)
+void tick()
 {
-    return a * b;
+    tk.update();
+    for (auto &i : alarms) {
+        i->checkAlarm();
+    }
 }
 
-String my_append(char c)
-{
-    return "I: " + c;
+void testAlarm() {
+        tone(ALARM_PIN, NOTE_A7, 1000);
 }
 
 void loop()
 {
     timer.run();
-
-    // char key = keypad.getKey();
-
-    // if (key)
-    // {
-    //     Serial.println(key);
-    //     testString(key).toCharArray(HHMM, 4);
-    //     // HHMM[0] = key;
-    //     // if (isdigit(key)) test =
-    // }
-    // else
-    // {
-    //     //   test(3, 5).toCharArray()
-    //     //   test
-    // }
+    input.readInput();
 }

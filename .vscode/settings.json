@@ -16,6 +16,11 @@
     "vector": "cpp",
     "ostream": "cpp",
     "rope": "cpp",
-    "*.tcc": "cpp"
+    "*.tcc": "cpp",
+    "slist": "cpp",
+    "array": "cpp",
+    "hashtable": "cpp",
+    "memory": "cpp",
+    "random": "cpp"
   }
 }
