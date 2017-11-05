@@ -115,7 +115,8 @@ class AlarmInputHandler
             {
                 if (key == set)
                 {
-                    currentAlarm->save(hours, minutes);
+                    assignValue();
+                    currentAlarm->set(hours, minutes);
                 }
                 else if (key == turnOff)
                 {
@@ -132,7 +133,8 @@ class AlarmInputHandler
         {
             if (isAlpha(key))
             {
-                (*alarms)[key - 'A']->turnOff();
+                AlarmDisplay::turnOff();
+                // (*alarms)[key - 'A']->turnOff();
             }
             else if (key == turnOff && currentAlarm)
             {

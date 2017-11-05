@@ -3,9 +3,9 @@
 #include <Arduino.h>
 #include <RTClib.h>
 #include <TFT.h>
-#include <TimeAlarms.h>
 
 #include "Pins.h"
+#include "Pitches.h"
 #include "RGB.h"
 #include "TextOptions.h"
 #include "TextSection.h"
@@ -22,22 +22,22 @@ class AlarmDisplay : public TimeDisplay
 
     void display(const String &hours, const String &minutes) const;
     void display(const String &hours, const String &minutes, const TimeDivision target) const;
-    void turnOff() const;
+    static void turnOff();
     void toggle();
     void toggle(bool updateDisplay);
     void edit(const TimeDivision target) const;
     void cancel() const;
-    void save(const String hours, const String minutes);
+    void set(const String hours, const String minutes);
     const String& getMins() const;
     const String& getHours() const;
+    void checkAlarm() const;
 
   private:
-    void set() const;
     void redraw(const RGB *color) const;
     void redraw() const;
     void redrawForEdit(const String hourPadded, const String minutesPadded, const TimeDivision target) const;
     void setActive(bool activeState);
-    static void ring(){}
+    void ring() const;
 
     bool active;
     String hourString, minuteString;
@@ -46,4 +46,6 @@ class AlarmDisplay : public TimeDisplay
     const RGB EDITING_COLOR = ORANGE;
     const RGB EDITING_INACTIVE = GRAY;
     RGB currentColor;
+
+    static const int ALARM_TONE = NOTE_A6;
 };

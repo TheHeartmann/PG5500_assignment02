@@ -5,4 +5,4 @@
 #define dc 9
 #define rst 8
 
-#define ALARM_PIN 6
+#define ALARM_PIN 7

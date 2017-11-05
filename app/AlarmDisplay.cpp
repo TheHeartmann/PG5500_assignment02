@@ -51,11 +51,10 @@ void AlarmDisplay::redrawForEdit(const String hourPadded, const String minutesPa
     minutes.update(minutesPadded, &minuteColor);
 }
 
-void AlarmDisplay::save(const String hours, const String minutes)
+void AlarmDisplay::set(const String hours, const String minutes)
 {
     hourString = pad(hours.toInt());
     minuteString = pad(minutes.toInt());
-    set();
     update();
 }
 
@@ -75,12 +74,10 @@ void AlarmDisplay::redraw(const RGB *color) const
     minutes.redraw(color);
 }
 
-void AlarmDisplay::set() const
+void AlarmDisplay::turnOff()
 {
-    Alarm.alarmRepeat((int)hourString.toInt(), (int)minuteString.toInt(), 0, ring);
+        noTone(ALARM_PIN);
 }
-
-void AlarmDisplay::turnOff() const {}
 
 void AlarmDisplay::init() const
 {
@@ -101,4 +98,18 @@ const String &AlarmDisplay::getHours() const
 const String &AlarmDisplay::getMins() const
 {
     return minuteString;
+}
+
+void AlarmDisplay::ring() const
+{
+    tone(ALARM_PIN, ALARM_TONE);
+}
+
+void AlarmDisplay::checkAlarm() const
+{
+    const auto now = rtc.now();
+    if (now.hour() == hourString.toInt() && now.minute() == minuteString.toInt() && now.second() == 0)
+    {
+        ring();
+    }
 }

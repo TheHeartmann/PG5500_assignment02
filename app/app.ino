@@ -1,7 +1,7 @@
-#include <RTClib.h>
 #include <SPI.h>
 #include <SimpleTimer.h>
 #include <TFT.h> // Arduino LCD library
+#include <RTClib.h>
 
 #include "AlarmDisplay.h"
 #include "InputHandler.h"
@@ -28,14 +28,19 @@ auto input = InputHandler(&alarms);
 
 void setup()
 {
-    if (!rtc.begin()) { while (1) ; }
+    if (!rtc.begin())
+    {
+        while (1)
+            ;
+    }
 
     tft.begin();
     tft.background(0, 0, 0);
 
     tk.init();
 
-    for (auto &i : alarms) {
+    for (auto &i : alarms)
+    {
         i->init();
     }
 
@@ -46,6 +51,13 @@ void setup()
 void tick()
 {
     tk.update();
+    for (auto &i : alarms) {
+        i->checkAlarm();
+    }
+}
+
+void testAlarm() {
+        tone(ALARM_PIN, NOTE_A7, 1000);
 }
 
 void loop()
